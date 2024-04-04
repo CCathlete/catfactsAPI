@@ -3,3 +3,7 @@ entrypoint = "README.md"
 
 [nix]
 channel = "stable-23_11"
+
+[[ports]]
+localPort = 3333
+externalPort = 80
