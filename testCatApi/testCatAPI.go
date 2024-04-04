@@ -1,10 +1,13 @@
 package main
 import(
+    "bytes"
+    "strings"
     "errors"
     "fmt"
     "net/http"
     "os"
     "time"
+    "io"
     "io/ioutil"
 )
 
@@ -21,6 +24,8 @@ func (s *Server) SetAndStartHttpServer () {
     mux := http.NewServeMux()
     mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
         fmt.Printf("server: %s /\n", r.Method)
+        /* fmt.Printf("server:") CONTINUE - changes needed for 
+        post method. */
         fmt.Fprintf(w, "{'message': 'hemlo'}")
     })
     s.body = http.Server{
@@ -34,8 +39,7 @@ func (s *Server) SetAndStartHttpServer () {
     }
 }
 
-func (c *MyClient) GetRequest() {
-    requestURL := fmt.Sprintf("http://localhost:%d", c.port)
+func (c *MyClient) GetRequest(requestURL string) {
     response, err := http.Get(requestURL)
     // If there"s a problem, exit the program with return value = 1.
     if err != nil {
@@ -46,8 +50,24 @@ func (c *MyClient) GetRequest() {
     fmt.Printf("client: status code %d\n", response.StatusCode)
 }
 
-func (c *MyClient) MakeRequest() {
-    requestURL := fmt.Sprintf("http://localhost:%d", c.port)
+func ValidateHttpMethod(method string) bool {
+    switch method {
+    case http.MethodGet:
+        return true
+    case http.MethodPost:
+        return true
+    default:
+        return false
+    }
+}
+
+func (c *MyClient) MakeRequest(method string, requestURL string,
+                              requestBody io.Reader) {
+    // Checking the method we use.
+    if isMethodValid := ValidateHttpMethod(method); !isMethodValid {
+        fmt.Println("This type of request is not supported.")
+        os.Exit(1)
+    }
     // Create an http request 'object' with the URL inside.
     request, err := http.NewRequest(http.MethodGet, requestURL, nil)
     // If there"s a problem, exit the program with return value = 1.
@@ -61,6 +81,7 @@ func (c *MyClient) MakeRequest() {
         fmt.Printf("error making http request: %s\n", err)
         os.Exit(1)
     }
+    time.Sleep(50 * time.Millisecond) // Might not be needed, check.
     fmt.Println("client: got response! YEY!")
     fmt.Printf("client: status code %d\n", response.StatusCode)
     // Reading the response's body.
@@ -82,5 +103,6 @@ func main() {
     time.Sleep(100 * time.Millisecond)
 
     myClient := MyClient{port: 3333}
-    myClient.MakeRequest()
+    requestURL := fmt.Sprintf("http://localhost:%d", myClient.port)
+    myClient.MakeRequest(http.MethodGet, requestURL, nil)
 }
