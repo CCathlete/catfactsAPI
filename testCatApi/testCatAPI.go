@@ -24,8 +24,18 @@ func (s *Server) SetAndStartHttpServer () {
     mux := http.NewServeMux()
     mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
         fmt.Printf("server: %s /\n", r.Method)
-        /* fmt.Printf("server:") CONTINUE - changes needed for 
-        post method. */
+        fmt.Printf("server: query id: %s\n", r.URL.Query().Get("id"))
+        fmt.Printf("server: content-type: %s\n", r.Header.Get("content-type"))
+        fmt.Println("server: headers:")
+        for headerName, headerValue := range r.Header {
+            fmt.Printf("\t%s = %s\n", headerName,
+                       strings.Join(headerValue, ", "))
+        }
+        requestByteSlice, err := ioutil.ReadAll(r.Body)
+        if err != nil {
+            fmt.Printf("server: couldn't read request body: %s\n", err)
+        }
+        fmt.Printf("server: request body: %s\n", requestByteSlice)
         fmt.Fprintf(w, "{'message': 'hemlo'}")
     })
     s.body = http.Server{
@@ -69,7 +79,7 @@ func (c *MyClient) MakeRequest(method string, requestURL string,
         os.Exit(1)
     }
     // Create an http request 'object' with the URL inside.
-    request, err := http.NewRequest(http.MethodGet, requestURL, nil)
+    request, err := http.NewRequest(method, requestURL, requestBody)
     // If there"s a problem, exit the program with return value = 1.
     if err != nil {
         fmt.Printf("error making http request: %s\n", err)
@@ -90,7 +100,7 @@ func (c *MyClient) MakeRequest(method string, requestURL string,
         fmt.Printf("client: couldn't read the response: %s\n", err)
         os.Exit(1)
     }
-    fmt.Printf("client: response body: %s", responseByteSlice)
+    fmt.Printf("client: response body: %s\n", responseByteSlice)
 }
 
 func main() {
@@ -103,6 +113,15 @@ func main() {
     time.Sleep(100 * time.Millisecond)
 
     myClient := MyClient{port: 3333}
+    // // Making a GET request.
     requestURL := fmt.Sprintf("http://localhost:%d", myClient.port)
     myClient.MakeRequest(http.MethodGet, requestURL, nil)
+    fmt.Println()
+
+    // Making a POST request.
+    requestURL = fmt.Sprintf("http://localhost:%d", myClient.port)
+    jsonByteSlice := []byte(`{"client_message": "hemlo, server fren."}`)
+    // Creating an io reader 'object' with our message in it.
+    bodyReader := bytes.NewReader(jsonByteSlice)
+    myClient.MakeRequest(http.MethodPost, requestURL, bodyReader)
 }
