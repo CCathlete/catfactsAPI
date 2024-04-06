@@ -138,22 +138,23 @@ func main() {
             Timeout: 30 * time.Second,
         },
     }
-    // // Making a GET request - Test 1: cat facts.
+    fmt.Printf("Making a GET request - Test 1: cat facts.\n")
     requestURL := fmt.Sprintf(
         "https://cat-fact.herokuapp.com/facts?animal_type=cat")
     myClient.MakeRequest(http.MethodGet, requestURL, nil)
     fmt.Println("\n")
 
-    // // Making a GET request - Test 2: my user without authentication.
-    requestURL := fmt.Sprintf(
+    fmt.Printf(
+        "Making a GET request - Test 2: my user without authentication.\n")
+    requestURL = fmt.Sprintf(
         "https://cat-fact.herokuapp.com/users/me")
     myClient.MakeRequest(http.MethodGet, requestURL, nil)
     fmt.Println("\n")
 
-    // Making a POST request - Test 5.
-    requestURL = fmt.Sprintf("https://cat-fact.herokuapp.com")
+    fmt.Printf("Making a POST request - Test 5\n.")
+    requestURL = fmt.Sprintf("https://cat-fact.herokuapp.com/me")
     jsonByteSlice := []byte(`{"client_message": "hemlo, server fren."}`)
-    // Creating an io reader 'object' with our message in it.
+    // Creating an io reader 'object' with our message in it."
     bodyReader := bytes.NewReader(jsonByteSlice)
     myClient.MakeRequest(http.MethodPost, requestURL, bodyReader)
 }

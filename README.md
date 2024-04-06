@@ -10,7 +10,7 @@ Test 1 - Get request for cat facts:
     in the address bar.
     Expected result: a response with a json body that has cat facts.
 
-Test 2 - get request without authentication:
+Test 2 - Get request without authentication:
     we parform the former test without the authentication. 
     Expected result: A message saying that we need to sign in.
 
@@ -32,8 +32,7 @@ Test 4 - Get request for a different user than the one authenticated.
     ** NOTE: This was not implemented since I didn't have enough time to
     build a google authentication mechanism. **
 
-    Test 5 - Post request.
+Test 5 - Post request.
     We send a request with a json in its body from port 3333 in our
     client.
-    Expected result: An error message or a message saying we are not
-    authorised to post to this server.
+    Expected result: An error message or a response id of type 4**.
