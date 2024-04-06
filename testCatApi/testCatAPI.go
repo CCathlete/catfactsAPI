@@ -18,6 +18,7 @@ type Server struct {
 
 type MyClient struct {
     port int
+    body http.Client
 }
 
 func (s *Server) SetAndStartHttpServer () {
@@ -85,8 +86,12 @@ func (c *MyClient) MakeRequest(method string, requestURL string,
         fmt.Printf("error making http request: %s\n", err)
         os.Exit(1)
     }
+    /* Setting the content type to be json media type in our requests
+    header. */
+    request.Header.Set("Content-Type", "application/json")
+
     // Activate the request.
-    response, err := http.DefaultClient.Do(request)
+    response, err := c.body.Do(request)
     if err != nil {
         fmt.Printf("error making http request: %s\n", err)
         os.Exit(1)
@@ -112,14 +117,19 @@ func main() {
     // Give the server time to start.
     time.Sleep(100 * time.Millisecond)
 
-    myClient := MyClient{port: 3333}
+    myClient := MyClient{
+        port: 3333,
+        body: http.Client{
+            Timeout: 30 * time.Second,
+        },
+    }
     // // Making a GET request.
     requestURL := fmt.Sprintf("http://localhost:%d", myClient.port)
     myClient.MakeRequest(http.MethodGet, requestURL, nil)
     fmt.Println()
 
     // Making a POST request.
-    requestURL = fmt.Sprintf("http://localhost:%d", myClient.port)
+    requestURL = fmt.Sprintf("http://localhost:%d?id=1234", myClient.port)
     jsonByteSlice := []byte(`{"client_message": "hemlo, server fren."}`)
     // Creating an io reader 'object' with our message in it.
     bodyReader := bytes.NewReader(jsonByteSlice)
