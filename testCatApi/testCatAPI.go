@@ -8,7 +8,6 @@ import(
     "os"
     "time"
     "io"
-    "io/ioutil"
     "encoding/json"
 )
 
@@ -33,7 +32,7 @@ func (s *Server) SetAndStartHttpServer () {
             fmt.Printf("\t%s = %s\n", headerName,
                        strings.Join(headerValue, ", "))
         }
-        requestByteSlice, err := ioutil.ReadAll(r.Body)
+        requestByteSlice, err := io.ReadAll(r.Body)
         if err != nil {
             fmt.Printf("server: couldn't read request body: %s\n", err)
         }
@@ -62,7 +61,7 @@ func (c *MyClient) GetRequest(requestURL string) {
     fmt.Println("client: got response! YEY!")
     fmt.Printf("client: status code %d\n", response.StatusCode)
     // Reading the response's body.
-    responseByteSlice, err := ioutil.ReadAll(response.Body)
+    responseByteSlice, err := io.ReadAll(response.Body)
     if err != nil {
         fmt.Printf("client: couldn't read the response: %s\n", err)
         os.Exit(1)
@@ -116,7 +115,7 @@ func (c *MyClient) MakeRequest(method string, requestURL string,
     fmt.Println("client: got response! YEY!")
     fmt.Printf("client: status code %d\n", response.StatusCode)
     // Reading the response's body.
-    responseByteSlice, err := ioutil.ReadAll(response.Body)
+    responseByteSlice, err := io.ReadAll(response.Body)
     if err != nil {
         fmt.Printf("client: couldn't read the response: %s\n", err)
         os.Exit(1)
