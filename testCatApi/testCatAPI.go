@@ -9,6 +9,7 @@ import(
     "time"
     "io"
     "io/ioutil"
+    "encoding/json"
 )
 
 type Server struct {
@@ -57,8 +58,23 @@ func (c *MyClient) GetRequest(requestURL string) {
         fmt.Printf("error making http request: %s\n", err)
         os.Exit(1)
     }
-    fmt.Println("client: got response!")
+    time.Sleep(50 * time.Millisecond) // Might not be needed, check.
+    fmt.Println("client: got response! YEY!")
     fmt.Printf("client: status code %d\n", response.StatusCode)
+    // Reading the response's body.
+    responseByteSlice, err := ioutil.ReadAll(response.Body)
+    if err != nil {
+        fmt.Printf("client: couldn't read the response: %s\n", err)
+        os.Exit(1)
+    }
+    // Print the json response with proper indentation.
+    var byteBuffer bytes.Buffer
+    json.Indent(&byteBuffer, responseByteSlice, "", "\t")
+    if err != nil {
+        fmt.Printf("couldn't pretty print json: %s\n", err)
+    }
+    fmt.Printf("\nclient: response body:\n")
+    byteBuffer.WriteTo(os.Stdout)
 }
 
 func ValidateHttpMethod(method string) bool {
@@ -86,8 +102,8 @@ func (c *MyClient) MakeRequest(method string, requestURL string,
         fmt.Printf("error making http request: %s\n", err)
         os.Exit(1)
     }
-    /* Setting the content type to be json media type in our requests
-    header. */
+    /* Setting the content type of the request's body to be json media
+    type in our requests header. */
     request.Header.Set("Content-Type", "application/json")
 
     // Activate the request.
@@ -105,18 +121,17 @@ func (c *MyClient) MakeRequest(method string, requestURL string,
         fmt.Printf("client: couldn't read the response: %s\n", err)
         os.Exit(1)
     }
-    fmt.Printf("client: response body: %s\n", responseByteSlice)
+    // Print the json response with proper indentation.
+    var byteBuffer bytes.Buffer
+    json.Indent(&byteBuffer, responseByteSlice, "", "\t")
+    if err != nil {
+        fmt.Printf("couldn't pretty print json: %s\n", err)
+    }
+    fmt.Printf("\nclient: response body:\n")
+    byteBuffer.WriteTo(os.Stdout)
 }
 
 func main() {
-    myServer := Server{port: 3333,
-                      body: http.Server{},
-                      }
-    // Start in a separate goroutine.
-    go myServer.SetAndStartHttpServer()
-    // Give the server time to start.
-    time.Sleep(100 * time.Millisecond)
-
     myClient := MyClient{
         port: 3333,
         body: http.Client{
@@ -124,14 +139,17 @@ func main() {
         },
     }
     // // Making a GET request.
-    requestURL := fmt.Sprintf("http://localhost:%d", myClient.port)
+    requestURL := fmt.Sprintf(
+        "https://cat-fact.herokuapp.com/facts?animal_type=cat")
     myClient.MakeRequest(http.MethodGet, requestURL, nil)
     fmt.Println()
 
+    /*
     // Making a POST request.
-    requestURL = fmt.Sprintf("http://localhost:%d?id=1234", myClient.port)
+    requestURL = fmt.Sprintf("https://cat-fact.herokuapp.com/#/users/me")
     jsonByteSlice := []byte(`{"client_message": "hemlo, server fren."}`)
     // Creating an io reader 'object' with our message in it.
     bodyReader := bytes.NewReader(jsonByteSlice)
     myClient.MakeRequest(http.MethodPost, requestURL, bodyReader)
+    */
 }
